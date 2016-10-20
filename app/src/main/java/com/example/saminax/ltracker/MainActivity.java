@@ -5,9 +5,11 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -15,15 +17,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationServices;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public GoogleApiClient mGoogleApiClient;
 
     Location mLastLocation;
-    TextView mLatitudeText;
-    TextView mLongitudeText;
-    public TextView T;
+    public TextView mLatitudeText, mLongitudeText;
 
+    //public TextView T;
 
 
     @Override
@@ -31,20 +32,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //To test changing a Textview
-        T= (TextView) findViewById(R.id.textView3);
-        T.setText("Hi!");
+        mLatitudeText = (TextView) findViewById(R.id.mLatitudeText);
+        mLongitudeText = (TextView) findViewById(R.id.mLongitudeText);
+        mLatitudeText.setText("Latitude");
+        mLongitudeText.setText("Longitude");
 
         // Create an instance of GoogleAPIClient.
-         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
+        if (mGoogleApiClient == null)
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
 
     }
-
-
 
     protected void onStart() {
         mGoogleApiClient.connect();
@@ -57,10 +58,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    public void onConnected(Bundle connectionHint) {
-
-
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        //System.out.println("--------onConnected");
+        Log.e("Samina","------onConnected Permission value:"+ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION));
+        Log.e("Samina","------onConnected PackageManagerPermission value:"+PackageManager.PERMISSION_GRANTED);
+        if (
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -68,9 +72,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            return;
+            Log.e("Samina","could not connect");
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 200);
+
         }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        else{
+            Log.e("Samina","connected successfully");
+
+        }
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
         if (mLastLocation != null) {
             mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
             mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
@@ -79,12 +90,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnectionSuspended(int i) {
-        System.out.println("What to do with this "+i+ "");
+        Log.e("Samina","--------onConnectionSuspended");
     }
-
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        System.out.println("???????????");
+        Log.e("Samina","-------onConnectionFailed");
+
     }
 }

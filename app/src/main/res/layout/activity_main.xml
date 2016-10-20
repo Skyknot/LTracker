@@ -27,5 +27,6 @@
         android:layout_below="@+id/mLatitudeText"
         android:layout_alignStart="@+id/mLatitudeText"
         android:layout_marginTop="46dp"
-        android:id="@+id/textView3" />
+        android:id="@+id/mLongitudeText" />
+
 </RelativeLayout>
