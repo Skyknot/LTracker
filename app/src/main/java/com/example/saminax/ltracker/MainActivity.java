@@ -1,10 +1,13 @@
 package com.example.saminax.ltracker;
+//AIzaSyAkrO0LPwQDPFdp6BwQmuIMKIcU0xcdt6c//
 
+import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,13 +15,18 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public GoogleApiClient mGoogleApiClient;
 
     Location mLastLocation;
     TextView mLatitudeText, mLongitudeText;
+    //GoogleMap mMap;
+    MapFragment mMapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +36,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         initializeFields();
         connectGoogleAPI();
 
+        mMapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.mMapFragment);
+        mMapFragment.getMapAsync(this);
+
+
+
     }
 
     void initializeFields(){
@@ -35,6 +49,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLongitudeText = (TextView) findViewById(R.id.mLongitudeText);
         mLatitudeText.setText("Latitude");
         mLongitudeText.setText("Longitude");
+
+
+
+
+        //mMapFragment =(MapFragment) findFragmentById(R.id.mMapFragment);
     }
 
     void connectGoogleAPI(){
@@ -94,4 +113,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e("Samina","-------onConnectionFailed");
     }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        Log.e("Samina","-------onMapReady");
+    }
+
+    /*@Override
+    public void onMapReady(GoogleMap map) {
+        Log.e("Samina","-------onMapReady");
+        map.addMarker(new MarkerOptions()
+                .position(new LatLng(0, 0))
+                .title("Marker"));
+    }*/
 }
