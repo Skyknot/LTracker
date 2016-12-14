@@ -2,8 +2,10 @@ package com.example.saminax.ltracker;
 //AIzaSyAkrO0LPwQDPFdp6BwQmuIMKIcU0xcdt6c//
 
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -11,22 +13,34 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 
 public class MainActivity extends AppCompatActivity implements  OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public GoogleApiClient mGoogleApiClient;
 
-    Location mLastLocation;
+    Location mCurrentLocation;
     TextView mLatitudeText, mLongitudeText;
-    //GoogleMap mMap;
+    GoogleMap mMap;
     MapFragment mMapFragment;
+    double latitude,longitude;
+    Marker mMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +52,13 @@ public class MainActivity extends AppCompatActivity implements  OnMapReadyCallba
 
         mMapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.mMapFragment);
-        mMapFragment.getMapAsync(this);
-
+        //mMapFragment.getMapAsync(this);
+        Button buttonRefresh = (Button) findViewById(R.id.buttonRefresh);
+        buttonRefresh.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                onConnected(null);
+            }
+        });
 
 
     }
@@ -49,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements  OnMapReadyCallba
         mLongitudeText = (TextView) findViewById(R.id.mLongitudeText);
         mLatitudeText.setText("Latitude");
         mLongitudeText.setText("Longitude");
+
 
 
 
@@ -96,13 +116,22 @@ public class MainActivity extends AppCompatActivity implements  OnMapReadyCallba
             Log.e("Samina","GoogleAPI Connected successfully");
 
         }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
-        if (mLastLocation != null) {
-            mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
-            mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
+        if (mCurrentLocation != null) {
+            mLatitudeText.setText(String.valueOf(mCurrentLocation.getLatitude()));
+            mLongitudeText.setText(String.valueOf(mCurrentLocation.getLongitude()));
+
+            latitude=mCurrentLocation.getLatitude();
+            longitude=mCurrentLocation.getLongitude();
+
+            mMapFragment.getMapAsync(this);
+            //mMapFragment.getMapAsync(this);
+
+
         }
     }
+
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -114,16 +143,20 @@ public class MainActivity extends AppCompatActivity implements  OnMapReadyCallba
         Log.e("Samina","-------onConnectionFailed");
     }
 
-    @Override
+    /*@Override
     public void onMapReady(GoogleMap googleMap) {
         Log.e("Samina","-------onMapReady");
-    }
+    }*/
 
-    /*@Override
+    @Override
     public void onMapReady(GoogleMap map) {
         Log.e("Samina","-------onMapReady");
         map.addMarker(new MarkerOptions()
-                .position(new LatLng(0, 0))
+                .position(new LatLng(latitude,longitude))
                 .title("Marker"));
-    }*/
+
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(latitude,longitude)).zoom(14.0f).build();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+        map.moveCamera(cameraUpdate);
+    }
 }

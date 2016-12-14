@@ -39,4 +39,14 @@
         android:layout_marginTop="50dp"
         android:layout_below="@+id/mLongitudeText"
         android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="Refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="18dp"
+        android:layout_marginTop="19dp"
+        android:id="@+id/buttonRefresh" />
 </RelativeLayout>
