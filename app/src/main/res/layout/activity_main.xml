@@ -12,13 +12,12 @@
 
 
     <TextView
-        android:text="TextView"
+        android:text="Latitude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView"
         android:layout_alignTop="@+id/buttonRefresh"
-        android:layout_alignParentStart="true"
-        tools:text="Latitude" />
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:text="Longitude"

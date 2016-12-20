@@ -5,6 +5,7 @@ package com.example.saminax.ltracker;
 import android.content.pm.PackageManager;
 import android.location.Location;
 
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -14,6 +15,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -29,6 +32,12 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -70,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         builder.build());*/
 
 
+
     }
 
 
@@ -92,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             latitude = mCurrentLocation.getLatitude();
             longitude = mCurrentLocation.getLongitude();
+            saveFile();
 
             mMapFragment.getMapAsync(this);
 
@@ -156,6 +167,48 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onStop() {
         mGoogleApiClient.disconnect();
         super.onStop();
+    }
+
+    private void saveFile(){
+
+
+
+        try
+        {
+
+            File path = new File(Environment.getExternalStorageDirectory(), "LTracker_Notes");
+            if (!path.exists())
+            {
+                path.mkdirs();
+            }
+            File myfile = new File(path, "LTracker.txt");
+
+
+            FileWriter writer = new FileWriter(myfile,true);
+            writer.append(getCurrentTimeStamp()+"  " + latitude + "  " + longitude + "\n\n");
+            writer.flush();
+            writer.close();
+
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+
+        }
+    }
+
+    public static String getCurrentTimeStamp(){
+        try {
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String currentDateTime = dateFormat.format(new Date());
+
+            return currentDateTime;
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return null;
+        }
     }
 
 }
