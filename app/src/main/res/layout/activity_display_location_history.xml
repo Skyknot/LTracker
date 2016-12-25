@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_display_location_history"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.saminax.ltracker.DisplayLocationHistory">
+
+    <fragment
+        android:name="com.google.android.gms.maps.MapFragment"
+        android:id="@+id/mMapFragment2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_above="@+id/textView6"
+        android:layout_alignParentStart="true"
+        tools:layout_height="wrap_content"
+        android:layout_below="@+id/textViewFileFound"
+        android:layout_marginTop="5dp" />
+
+    <TextView
+        android:text="Copyright © Samina Naznin, Project for MIT, IIT, DU"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView6"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:textAlignment="center" />
+
+    <TextView
+        android:text="No tracking history on that day!"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:id="@+id/textViewFileFound"
+        android:textAlignment="center"
+        android:layout_below="@+id/textviewDate"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:text="Date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:id="@+id/textviewDate"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        tools:textStyle="bold"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textAlignment="center" />
+</RelativeLayout>
