@@ -1,13 +1,10 @@
 package com.example.saminax.ltracker;
-//AIzaSyAkrO0LPwQDPFdp6BwQmuIMKIcU0xcdt6c//
-
-
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-
 import android.os.Environment;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -18,15 +15,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
-
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,8 +27,8 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,14 +36,17 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     public GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
     LocationRequest mLocationRequest;
     boolean mRequestingLocationUpdates= true;
-    String mLastUpdateTime;
+    String mLastUpdateTime="00:00:00";
+    GoogleMap mainMap;
+    Marker marker;
+    Switch switchRecordingOnOff;
+    Button buttonRefresh;
 
     TextView mLatitudeText, mLongitudeText;
     private MapFragment mMapFragment;
@@ -65,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         connectGoogleAPI();
     }
 
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.e("Samina", "------onConnected Permission value:" + ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION));
@@ -77,14 +72,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.e("Samina", "GoogleAPI Connected successfully");
 
         }
-        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
+
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        mLastUpdateTime=getCurrentTimeStamp();
+        mMapFragment.getMapAsync(this);
+
+        startLocationUpdates(mGoogleApiClient,mLocationRequest);
+
         if (mCurrentLocation != null) {
             updateUI();
-            //saveFile();
-        }
-        if (mRequestingLocationUpdates) {
-            startLocationUpdates();
         }
 
     }
@@ -103,53 +99,41 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap map) {
         Log.e("Samina", "-------onMapReady");
-        map.addMarker(new MarkerOptions()
-                .position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
-                .title("Marker"));
 
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())).zoom(14.0f).build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-        map.moveCamera(cameraUpdate);
+        mainMap=map;
+
+        if(marker!=null) marker.remove();
+        addCurrentMarker(mainMap);
+        changeCameraPosition(mainMap);
+
     }
 
     @Override
     public void onLocationChanged(Location location) {
+
         mCurrentLocation = location;
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        updateUI();
-        Switch switchRecordingOnOff= (Switch) findViewById(R.id.switchRecordingOnOff);
+
         if(switchRecordingOnOff.isChecked()) {
             saveFile();
             Log.e("Samina_On_Loc_Change", "Last file update at "+mLastUpdateTime);
         }
 
 
+        mLastUpdateTime=getCurrentTimeStamp();
+        mLatitudeText.setText(String.valueOf(mCurrentLocation.getLatitude()));
+        mLongitudeText.setText(String.valueOf(mCurrentLocation.getLongitude()));
+        if(marker!=null) marker.remove();
+        addCurrentMarker(mainMap);
+
     }
 
-
-    void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.e("Samina_Start_Update", "Could not connect GoogleAPI");
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        } else {
-            Log.e("Samina_Start_Update", "GoogleAPI Connected successfully");
-
-        }
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest,this);
+    @Override
+    protected void onDestroy() {
+        stopLocationUpdates();
+        mGoogleApiClient.disconnect();
+        super.onDestroy();
     }
 
-    void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
-    }
-
-    void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
 
     void initializeFields() {
         mLatitudeText = (TextView) findViewById(R.id.mLatitudeText);
@@ -157,17 +141,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLatitudeText.setText("Latitude");
         mLongitudeText.setText("Longitude");
 
+        switchRecordingOnOff= (Switch) findViewById(R.id.switchRecordingOnOff);
+
         mMapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.mMapFragment);
 
-        Button buttonRefresh = (Button) findViewById(R.id.buttonRefresh);
+        buttonRefresh = (Button) findViewById(R.id.buttonRefresh);
+
         buttonRefresh.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mGoogleApiClient.disconnect();
-                mGoogleApiClient.connect();
+                updateUI();
             }
         });
 
+    }
+
+    void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     void connectGoogleAPI() {
@@ -179,8 +172,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .addApi(LocationServices.API)
                     .build();
 
-
     }
+
+    void startLocationUpdates(GoogleApiClient mGoogleApiClient,LocationRequest mLocationRequest) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.e("Samina_Start_Update", "Failed");
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        } else {
+            Log.e("Samina_Start_Update", "Successful");
+        }
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest,this);
+    }
+
+    void updateUI(){
+        mLatitudeText.setText(String.valueOf(mCurrentLocation.getLatitude()));
+        mLongitudeText.setText(String.valueOf(mCurrentLocation.getLongitude()));
+        mMapFragment.getMapAsync(this);
+    }
+
+    private void addCurrentMarker(GoogleMap map){
+
+        marker= map.addMarker(new MarkerOptions()
+                .position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
+                .title(mLastUpdateTime));
+    }
+
+    private void changeCameraPosition(GoogleMap map){
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())).zoom(14.0f).build();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+        map.moveCamera(cameraUpdate);
+    }
+
+    void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                mGoogleApiClient, this);
+    }
+
 
     protected void onStart() {
         mGoogleApiClient.connect();
@@ -188,31 +217,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     protected void onStop() {
-
-        //mGoogleApiClient.disconnect();
-
         super.onStop();
     }
 
-    @Override
-    protected void onDestroy() {
-        stopLocationUpdates();
-        mGoogleApiClient.disconnect();
-        super.onDestroy();
-    }
 
     private void saveFile(){
         try
         {
-
             File path = new File(Environment.getExternalStorageDirectory(), "LTracker_Notes");
             if (!path.exists())
             {
                 path.mkdirs();
             }
             File myfile = new File(path, getCurrentDate()+ ".txt");
-
-
 
             FileWriter writer = new FileWriter(myfile,true);
             writer.append(getCurrentTimeStamp()+"  " + mCurrentLocation.getLatitude() + "  " + mCurrentLocation.getLongitude()  + "\n");
@@ -252,12 +269,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             return null;
         }
-    }
-
-    void updateUI(){
-        mLatitudeText.setText(String.valueOf(mCurrentLocation.getLatitude()));
-        mLongitudeText.setText(String.valueOf(mCurrentLocation.getLongitude()));
-        mMapFragment.getMapAsync(this);
     }
 
     public void goToSelectDateActivity(View view) {

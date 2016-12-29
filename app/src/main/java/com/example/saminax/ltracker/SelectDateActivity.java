@@ -8,22 +8,25 @@ import android.widget.DatePicker;
 
 public class SelectDateActivity extends AppCompatActivity {
     public final static String EXTRA_MESSAGE = "com.example.saminax.ltracker.MESSAGE";
+    private DatePicker mDatePicker;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_date);
+        mDatePicker = (DatePicker) findViewById(R.id.datePicker);
 
         //Intent intent = getIntent();
+
 
 
     }
 
    public void goToDisplayHistoryActivity(View view){
         Intent intent = new Intent(this, DisplayLocationHistory.class);
-        DatePicker mDatepicker= (DatePicker) findViewById(R.id.datePicker);
-        int month=mDatepicker.getMonth();
+
+        int month=mDatePicker.getMonth();
         month++;
-        String date=mDatepicker.getYear()+"-"+month +"-"+ mDatepicker.getDayOfMonth();
+        String date=mDatePicker.getYear()+"-"+month +"-"+ mDatePicker.getDayOfMonth();
         intent.putExtra(EXTRA_MESSAGE, date);
         startActivity(intent);
     }

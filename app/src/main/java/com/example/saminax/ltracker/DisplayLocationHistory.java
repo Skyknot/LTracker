@@ -50,16 +50,7 @@ public class DisplayLocationHistory extends AppCompatActivity implements OnMapRe
         date = intent.getStringExtra(SelectDateActivity.EXTRA_MESSAGE);
         textviewDate.setText(date);
 
-
         mapFragment.getMapAsync(this);
-       // delay();
-        if(mMap==null){
-            Log.e("Delay", "Ekhono Null");
-        }
-
-
-
-
 
     }
 
@@ -67,13 +58,6 @@ public class DisplayLocationHistory extends AppCompatActivity implements OnMapRe
     protected void onDestroy() {
         super.onDestroy();
         mMap=null;
-    }
-    void delay(){
-        //for(long k=0;k<999999999;k++)
-        for(long i=0;i<999999999;i++){
-            //int j=(int)i;
-        }
-
     }
 
     void drawPath() throws IOException {
@@ -152,12 +136,6 @@ public class DisplayLocationHistory extends AppCompatActivity implements OnMapRe
         } catch (IOException e) {
             e.printStackTrace();
         }
-            /*map.addMarker(new MarkerOptions()
-                    .position(new LatLng(latitude, longitude))
-                    .title(time));*/
 
-        /*CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(latitude, longitude)).zoom(14.0f).build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-        map.moveCamera(cameraUpdate);*/
     }
 }
