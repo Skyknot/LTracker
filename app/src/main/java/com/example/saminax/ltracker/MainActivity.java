@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
     LocationRequest mLocationRequest;
-    boolean mRequestingLocationUpdates= true;
+   // boolean mRequestingLocationUpdates= true;
     String mLastUpdateTime="00:00:00";
     GoogleMap mainMap;
     Marker marker;
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     TextView mLatitudeText, mLongitudeText;
     private MapFragment mMapFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,18 +71,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         } else {
             Log.e("Samina", "GoogleAPI Connected successfully");
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            mLastUpdateTime=getCurrentTimeStamp();
+
+
+            startLocationUpdates(mGoogleApiClient,mLocationRequest);
+
+            if (mCurrentLocation != null) {
+                mMapFragment.getMapAsync(this);
+                updateUI();
+            }
 
         }
 
-        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        mLastUpdateTime=getCurrentTimeStamp();
-        mMapFragment.getMapAsync(this);
 
-        startLocationUpdates(mGoogleApiClient,mLocationRequest);
-
-        if (mCurrentLocation != null) {
-            updateUI();
-        }
 
     }
 
@@ -150,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         buttonRefresh.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                updateUI();
+                if(mCurrentLocation!=null)updateUI();
             }
         });
 
@@ -192,8 +195,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMapFragment.getMapAsync(this);
     }
 
+
     private void addCurrentMarker(GoogleMap map){
 
+        if(mCurrentLocation!=null && map!=null)
         marker= map.addMarker(new MarkerOptions()
                 .position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
                 .title(mLastUpdateTime));
