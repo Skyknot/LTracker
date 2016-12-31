@@ -56,4 +56,14 @@
         tools:textStyle="bold"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         android:textAlignment="center" />
+
+    <Button
+        android:text="Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/buttonDrawPolyline"
+        android:visibility="invisible" />
 </RelativeLayout>
